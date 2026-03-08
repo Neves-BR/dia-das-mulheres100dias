@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Feliz Dia da Mulher</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap');
+
+  :root {
+    --white: #fdfaf7;
+    --rose: #f0d9d3;
+    --rose-deep: #e8c4bb;
+    --beige: #f5ede4;
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --text-dark: #3a2e28;
+    --text-mid: #7a6458;
+    --text-soft: #a8918a;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Jost', sans-serif;
+    background: var(--white);
+    color: var(--text-dark);
+  }
+
+  /* ─── CANVAS DE CORAÇÕES ─── */
+  #hearts-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── WRAPPER DE TELAS ─── */
+  #app {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(30px);
+    z-index: 1;
+  }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .screen.exit-up {
+    opacity: 0;
+    transform: translateY(-40px);
+    pointer-events: none;
+  }
+
+  /* ─── BACKGROUND TEXTURA ─── */
+  .screen::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(240,217,211,0.45) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,169,110,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(240,217,211,0.2) 0%, transparent 60%);
+    background-color: var(--white);
+    z-index: -1;
+  }
+
+  /* ─── ORNAMENTO DOURADO ─── */
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+  }
+
+  .ornament-line {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+
+  .ornament-line.right {
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .ornament-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* ─── TELA 1 – INICIAL ─── */
+  #screen-1 .eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  #screen-1 h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(36px, 10vw, 52px);
+    line-height: 1.15;
+    text-align: center;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+  }
+
+  #screen-1 .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(15px, 4vw, 18px);
+    color: var(--text-mid);
+    text-align: center;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  .btn-open {
+    margin-top: 44px;
+    padding: 14px 44px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.4s, background 0.4s;
+  }
+
+  .btn-open::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+  }
+
+  .btn-open:active::after,
+  .btn-open:hover::after {
+    transform: scaleX(1);
+  }
+
+  .btn-open:active,
+  .btn-open:hover {
+    color: var(--white);
+  }
+
+  /* ─── TELA 2 – VERSÍCULO ─── */
+  #screen-2 .intro-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(18px, 5vw, 22px);
+    text-align: center;
+    color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  #screen-2 .verse-ref {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(42px, 12vw, 64px);
+    color: var(--text-dark);
+    text-align: center;
+    letter-spacing: -1px;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+
+  #screen-2 .verse-ref::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: var(--gold);
+    transition: width 0.4s;
+  }
+
+  #screen-2 .verse-ref:hover::after,
+  #screen-2 .verse-ref:active::after {
+    width: 100%;
+  }
+
+  .date-reveal {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.8s, transform 0.8s;
+    margin-top: 32px;
+  }
+
+  .date-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .date-reveal .bridge-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(15px, 4vw, 17px);
+    color: var(--text-soft);
+    margin-bottom: 12px;
+  }
+
+  .date-reveal .date-big {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(52px, 16vw, 80px);
+    color: var(--gold);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+
+  /* ─── TELA 3 – TEXTO DO VERSÍCULO ─── */
+  #screen-3 .verse-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  #screen-3 .verse-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(19px, 5.5vw, 24px);
+    line-height: 1.75;
+    text-align: center;
+    color: var(--text-dark);
+    max-width: 340px;
+  }
+
+  #screen-3 .verse-text em {
+    font-style: normal;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  #screen-3 .verse-tags {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.8s 0.4s, transform 0.8s 0.4s;
+  }
+
+  #screen-3 .verse-tags.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #screen-3 .tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(16px, 4.5vw, 20px);
+    color: var(--text-mid);
+    letter-spacing: 1px;
+  }
+
+  /* ─── TELA 4 – 100 DIAS ─── */
+  #screen-4 .pre-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(16px, 4.5vw, 20px);
+    color: var(--text-mid);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  #screen-4 .days-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(22px, 6vw, 28px);
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: -0.5px;
+  }
+
+  .counter-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  #counter-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(80px, 24vw, 120px);
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: -2px;
+    transition: color 0.3s;
+  }
+
+  .counter-suffix {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(22px, 6vw, 32px);
+    color: var(--text-mid);
+  }
+
+  #screen-4 .after-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(15px, 4.2vw, 18px);
+    color: var(--text-soft);
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.7;
+  }
+
+  /* ─── TELA 5 – MENSAGEM ─── */
+  #screen-5 {
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  #screen-5 .msg-header {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  #screen-5 .msg-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(18px, 5vw, 22px);
+    line-height: 1.85;
+    text-align: center;
+    color: var(--text-dark);
+    max-width: 340px;
+  }
+
+  #screen-5 .msg-body p {
+    margin-bottom: 20px;
+  }
+
+  #screen-5 .signature {
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  #screen-5 .signature .com-amor {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(14px, 4vw, 16px);
+    color: var(--text-soft);
+  }
+
+  #screen-5 .signature .name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(28px, 8vw, 36px);
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* ─── TELA 6 – FINAL ─── */
+  #screen-6 .final-trio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 28px;
+  }
+
+  #screen-6 .final-item {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(32px, 10vw, 48px);
+    color: var(--text-dark);
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+
+  #screen-6 .final-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #screen-6 .final-item:nth-child(2) { transition-delay: 0.2s; }
+  #screen-6 .final-item:nth-child(3) { transition-delay: 0.4s; }
+
+  #screen-6 .final-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(16px, 4.5vw, 20px);
+    color: var(--gold);
+    text-align: center;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 1s 0.8s;
+  }
+
+  #screen-6 .final-tagline.visible {
+    opacity: 1;
+  }
+
+  /* ─── INDICADOR DE PROGRESSO ─── */
+  #progress {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 7px;
+    z-index: 100;
+  }
+
+  .prog-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--rose-deep);
+    transition: background 0.4s, transform 0.4s;
+  }
+
+  .prog-dot.active {
+    background: var(--gold);
+    transform: scale(1.4);
+  }
+
+  /* ─── BOTÃO PRÓXIMA TELA ─── */
+  .nav-btn {
+    position: fixed;
+    bottom: 60px;
+    right: 28px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.3s, opacity 0.3s;
+    opacity: 0.7;
+  }
+
+  .nav-btn:active, .nav-btn:hover {
+    background: var(--gold);
+    opacity: 1;
+  }
+
+  .nav-btn:active svg path,
+  .nav-btn:hover svg path {
+    stroke: var(--white);
+  }
+
+  .nav-btn svg path {
+    stroke: var(--gold);
+    transition: stroke 0.3s;
+  }
+
+  /* ─── POPUP ─── */
+  #popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    padding: 32px;
+  }
+
+  #popup.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  #popup .backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(58, 46, 40, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  #popup .card {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--gold-light);
+    padding: 40px 32px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #popup.visible .card {
+    transform: scale(1) translateY(0);
+  }
+
+  #popup .card .pop-ornament {
+    font-size: 22px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  #popup .card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+
+  #popup .card p:last-of-type {
+    color: var(--gold);
+    font-weight: 400;
+    font-size: 17px;
+    margin-bottom: 24px;
+  }
+
+  #popup .close-btn {
+    background: transparent;
+    border: 1px solid var(--gold-light);
+    color: var(--text-soft);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 28px;
+    cursor: pointer;
+  }
+
+  /* ─── ANIMAÇÃO FADE-IN ELEMENTOS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .delay-1 { animation-delay: 0.2s; }
+  .delay-2 { animation-delay: 0.5s; }
+  .delay-3 { animation-delay: 0.8s; }
+  .delay-4 { animation-delay: 1.1s; }
+
+  /* ─── SCROLL SUAVE NA TELA 5 ─── */
+  #screen-5 { scroll-behavior: smooth; }
+
+  /* ─── LINHA DIVISÓRIA ─── */
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 16px auto;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="hearts-canvas"></canvas>
+
+<div id="app">
+
+  <!-- TELA 1 -->
+  <section class="screen active" id="screen-1">
+    <div class="ornament fade-up">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div>
+      <div class="ornament-line right"></div>
+    </div>
+    <p class="eyebrow fade-up delay-1">8 de Março</p>
+    <h1 class="fade-up delay-2">Feliz<br>Dia da<br>Mulher</h1>
+    <div class="divider fade-up delay-3"></div>
+    <p class="subtitle fade-up delay-3">Para a mulher que escolheu<br>caminhar comigo.</p>
+    <button class="btn-open fade-up delay-4" onclick="goTo(2)">Abrir</button>
+  </section>
+
+  <!-- TELA 2 -->
+  <section class="screen" id="screen-2">
+    <p class="intro-text fade-up">Existe um versículo que<br>marcou a nossa história.</p>
+    <div class="ornament fade-up delay-1">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div>
+      <div class="ornament-line right"></div>
+    </div>
+    <p class="verse-ref fade-up delay-2" id="verse-trigger" onclick="showPopup()">Jeremias 29:11</p>
+    <div class="date-reveal" id="date-reveal">
+      <p class="bridge-text">E foi por causa dele que<br>escolhemos uma data.</p>
+      <p class="date-big">29/11</p>
+    </div>
+  </section>
+
+  <!-- TELA 3 -->
+  <section class="screen" id="screen-3">
+    <p class="verse-label fade-up">Jeremias 29:11</p>
+    <div class="ornament fade-up delay-1">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div>
+      <div class="ornament-line right"></div>
+    </div>
+    <p class="verse-text fade-up delay-2">
+      "Porque eu bem sei os planos que tenho para <em>vocês</em>, diz o Senhor.<br><br>
+      Planos de paz e não de mal, para dar a vocês um <em>futuro</em> e uma <em>esperança</em>."
+    </p>
+    <div class="verse-tags" id="verse-tags">
+      <div class="divider"></div>
+      <p class="tag">Um plano.</p>
+      <p class="tag">Um propósito.</p>
+    </div>
+  </section>
+
+  <!-- TELA 4 -->
+  <section class="screen" id="screen-4">
+    <p class="pre-text fade-up">E amanhã completamos</p>
+    <p class="days-label fade-up delay-1">de casamento</p>
+    <div class="counter-wrap fade-up delay-2">
+      <span id="counter-num">0</span>
+      <span class="counter-suffix">dias</span>
+    </div>
+    <div class="divider"></div>
+    <p class="after-text fade-up delay-3">Apenas o começo daquilo que decidimos viver juntos diante de Deus.</p>
+  </section>
+
+  <!-- TELA 5 -->
+  <section class="screen" id="screen-5">
+    <p class="msg-header fade-up">Uma mensagem para você</p>
+    <div class="ornament fade-up delay-1">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div>
+      <div class="ornament-line right"></div>
+    </div>
+    <div class="msg-body fade-up delay-2">
+      <p>Neste Dia da Mulher eu agradeço a Deus pela sua vida.</p>
+      <p>Pela sua fé, pela sua força e pela alegria de construir uma vida ao seu lado.</p>
+      <p>Se escolhemos 29/11 por causa de Jeremias 29:11, foi porque acreditamos que Deus tem um plano para nós.</p>
+      <p>E nesses primeiros 100 dias eu só consigo agradecer por estar vivendo esse plano com você.</p>
+    </div>
+    <div class="signature fade-up delay-3">
+      <p class="com-amor">Com amor,</p>
+      <p class="name">Guilherme</p>
+    </div>
+  </section>
+
+  <!-- TELA 6 -->
+  <section class="screen" id="screen-6">
+    <div class="final-trio">
+      <p class="final-item" id="fi-1">29/11</p>
+      <p class="final-item" id="fi-2">100 dias</p>
+      <p class="final-item" id="fi-3">Jeremias 29:11</p>
+    </div>
+    <div class="divider"></div>
+    <p class="final-tagline" id="final-tagline">Um plano. Um propósito.</p>
+  </section>
+
+</div>
+
+<!-- BOTÃO NAVEGAR -->
+<button class="nav-btn" id="nav-btn" onclick="nextScreen()" aria-label="Próxima">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M8 2L8 14M8 14L3 9M8 14L13 9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<!-- INDICADOR -->
+<div id="progress">
+  <div class="prog-dot active" data-s="1"></div>
+  <div class="prog-dot" data-s="2"></div>
+  <div class="prog-dot" data-s="3"></div>
+  <div class="prog-dot" data-s="4"></div>
+  <div class="prog-dot" data-s="5"></div>
+  <div class="prog-dot" data-s="6"></div>
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="backdrop" onclick="closePopup()"></div>
+  <div class="card">
+    <span class="pop-ornament">🌹</span>
+    <p>Obrigado por viver<br>esse plano comigo.</p>
+    <p>Eu escolheria você novamente.</p>
+    <button class="close-btn" onclick="closePopup()">Fechar</button>
+  </div>
+</div>
+
+<script>
+  /* ─── ESTADO ─── */
+  let current = 1;
+  const total = 6;
+
+  /* ─── NAVEGAÇÃO ─── */
+  function goTo(n) {
+    const prev = document.getElementById('screen-' + current);
+    const next = document.getElementById('screen-' + n);
+    if (!next || n === current) return;
+
+    prev.classList.remove('active');
+    prev.classList.add('exit-up');
+    setTimeout(() => prev.classList.remove('exit-up'), 900);
+
+    next.classList.add('active');
+    current = n;
+    updateProgress();
+    onScreenEnter(n);
+
+    // Ocultar botão na última tela
+    document.getElementById('nav-btn').style.opacity = (n === total) ? '0' : '0.7';
+    document.getElementById('nav-btn').style.pointerEvents = (n === total) ? 'none' : 'all';
+  }
+
+  function nextScreen() {
+    if (current < total) goTo(current + 1);
+  }
+
+  function updateProgress() {
+    document.querySelectorAll('.prog-dot').forEach(d => {
+      d.classList.toggle('active', parseInt(d.dataset.s) === current);
+    });
+  }
+
+  /* ─── AÇÕES POR TELA ─── */
+  function onScreenEnter(n) {
+    if (n === 2) {
+      setTimeout(() => {
+        document.getElementById('date-reveal').classList.add('visible');
+      }, 1200);
+    }
+    if (n === 3) {
+      setTimeout(() => {
+        document.getElementById('verse-tags').classList.add('visible');
+      }, 800);
+    }
+    if (n === 4) {
+      setTimeout(() => animateCounter(), 400);
+    }
+    if (n === 6) {
+      setTimeout(() => {
+        document.getElementById('fi-1').classList.add('visible');
+      }, 200);
+      setTimeout(() => {
+        document.getElementById('fi-2').classList.add('visible');
+      }, 450);
+      setTimeout(() => {
+        document.getElementById('fi-3').classList.add('visible');
+      }, 700);
+      setTimeout(() => {
+        document.getElementById('final-tagline').classList.add('visible');
+      }, 1100);
+    }
+  }
+
+  /* ─── CONTADOR ─── */
+  function animateCounter() {
+    const el = document.getElementById('counter-num');
+    let count = 0;
+    const target = 100;
+    const duration = 2200;
+    const step = duration / target;
+
+    // easing out
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+
+    const start = performance.now();
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      count = Math.round(ease(progress) * target);
+      el.textContent = count;
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ─── POPUP ─── */
+  function showPopup() {
+    document.getElementById('popup').classList.add('visible');
+  }
+  function closePopup() {
+    document.getElementById('popup').classList.remove('visible');
+  }
+
+  /* ─── SWIPE GESTURE ─── */
+  let startY = 0;
+  document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dy = startY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 50) {
+      if (dy > 0 && current < total) nextScreen();
+      if (dy < 0 && current > 1) goTo(current - 1);
+    }
+  }, { passive: true });
+
+  /* ─── KEYBOARD ─── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === ' ') nextScreen();
+    if (e.key === 'ArrowUp') goTo(current - 1);
+  });
+
+  /* ─── CORAÇÕES FLUTUANTES ─── */
+  const canvas = document.getElementById('hearts-canvas');
+  const ctx = canvas.getContext('2d');
+  let hearts = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  function spawnHeart() {
+    hearts.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height + 20,
+      size: Math.random() * 10 + 5,
+      opacity: Math.random() * 0.4 + 0.1,
+      speed: Math.random() * 0.6 + 0.3,
+      drift: (Math.random() - 0.5) * 0.5,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: Math.random() * 0.02 + 0.01
+    });
+  }
+
+  function drawHeart(x, y, size, opacity) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = '#e8c4bb';
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.3);
+    ctx.bezierCurveTo(size * 0.5, -size, size, -size * 0.3, size * 0.5, size * 0.3);
+    ctx.bezierCurveTo(size * 0.25, size * 0.7, 0, size, 0, size * 1.1);
+    ctx.bezierCurveTo(0, size, -size * 0.25, size * 0.7, -size * 0.5, size * 0.3);
+    ctx.bezierCurveTo(-size, -size * 0.3, -size * 0.5, -size, 0, -size * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  let lastSpawn = 0;
+  function animateHearts(ts) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (ts - lastSpawn > 1800) {
+      spawnHeart();
+      lastSpawn = ts;
+    }
+
+    hearts = hearts.filter(h => h.y > -30);
+    hearts.forEach(h => {
+      h.y -= h.speed;
+      h.wobble += h.wobbleSpeed;
+      h.x += Math.sin(h.wobble) * h.drift;
+      drawHeart(h.x, h.y, h.size, h.opacity);
+    });
+
+    requestAnimationFrame(animateHearts);
+  }
+  requestAnimationFrame(animateHearts);
+</script>
+</body>
+</html>
